@@ -31,7 +31,13 @@ public class FollowEdgeDao {
      * @return A list of all follows for the given user
      */
     public PaginatedQueryList<FollowEdge> getAllFollows(String username) {
-        return null;
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username not provided");
+        }
+        DynamoDBQueryExpression<FollowEdge> queryExpression = new DynamoDBQueryExpression<>();
+        FollowEdge followEdge = new FollowEdge(username, null);
+        queryExpression.withHashKeyValues(followEdge);
+        return this.mapper.query(FollowEdge.class, queryExpression);
     }
 
     /**
@@ -40,7 +46,15 @@ public class FollowEdgeDao {
      * @return A list of all followers for the given user
      */
     public PaginatedQueryList<FollowEdge> getAllFollowers(String username) {
-        return null;
+        if (username == null || username.isEmpty()) {
+            throw new IllegalArgumentException("Username not provided");
+        }
+        Map<String, AttributeValue> eav = new HashMap<>();
+        eav.put(":toUsername", new AttributeValue().withS(username));
+        DynamoDBQueryExpression<FollowEdge> queryExpression = new DynamoDBQueryExpression<>();
+        queryExpression.withKeyConditionExpression("toUsername = :toUsername")
+                .withExpressionAttributeValues(eav);
+        return this.mapper.query(FollowEdge.class, queryExpression);
     }
 
     /**
